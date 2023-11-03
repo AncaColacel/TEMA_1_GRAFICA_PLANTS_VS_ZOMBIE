@@ -25,6 +25,9 @@ TEMA1::~TEMA1()
 {
 }
 
+// declare variabile
+float  translate_hexagon_X, translate_hexagon_Y, scaleX, scaleY, angularStep;
+float radiani, translate_stea_X, translate_stea_Y;
 
 void TEMA1::Init()
 {
@@ -33,6 +36,21 @@ void TEMA1::Init()
     camera->SetRotation(glm::vec3(0, 0, 0));
     camera->Update();
     GetCameraInput()->SetActive(false);
+
+    // initializare date pentru transformari
+    
+
+    translate_hexagon_X = 0;
+    translate_hexagon_Y = 0;
+
+    translate_stea_X = 0;
+    translate_stea_Y = 0;
+
+    scaleX = 1;
+    scaleY = 1;
+
+
+    angularStep = 0;
 
     
 
@@ -141,10 +159,10 @@ void TEMA1::Init()
 
         vector<VertexFormat> vertecsi4
         {
-            VertexFormat(glm::vec3(7.5f, 0, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(0, 15.0f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(7.5f, 30.0f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(15.0f, 15.f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(7.5f, 0, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(0, 15.0f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(7.5f, 30.0f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(15.0f, 15.f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
 
         };
         vector<unsigned int> indici4 =
@@ -158,10 +176,10 @@ void TEMA1::Init()
         // creare dreptunghi pt romb 1
         vector<VertexFormat> vertecsi5
         {
-            VertexFormat(glm::vec3(0.0f, 0, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(0, 7.5f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(15.0f, 7.5f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
-            VertexFormat(glm::vec3(15.0f, 0.0f, 0), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(0.0f, 0, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(0, 7.5f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(15.0f, 7.5f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
+            VertexFormat(glm::vec3(15.0f, 0.0f, 0.5), glm::vec3(1, 0.38, 0), glm::vec3(0.2, 0.8, 0.6)),
 
         };
         vector<unsigned int> indici5 =
@@ -304,6 +322,107 @@ void TEMA1::Init()
 
         CreateMesh("stea", vertecsi12, indici12);
 
+        // creare hexagon dublu
+
+        // pentru hexagonul mare
+        vector<VertexFormat> vertecsi13
+        {
+        VertexFormat(glm::vec3(0 , 5.97 / 2  , 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),     // C - 0
+        VertexFormat(glm::vec3(-5.29 / 2, 2.78 / 2 , 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),   // D -  1
+        VertexFormat(glm::vec3(-5.18 / 2, -2.98 / 2, 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),  // E - 2
+        VertexFormat(glm::vec3(0, -5.97 / 2 , 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),    // F - 3
+        VertexFormat(glm::vec3(5.18 / 2 , -2.98 / 2 , 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),    // B - 4
+        VertexFormat(glm::vec3(5.28 / 2 , 2.8 / 2 , 2), glm::vec3(0, 0.094, 1), glm::vec3(0.2, 0.8, 0.6)),    // G - 5
+        VertexFormat(glm::vec3(0.0, 0.0, 2), glm::vec3(1, 1, 1), glm::vec3(0.2, 0.8, 0.6)),    // A - 6
+        };
+
+        vector<unsigned int> indici13 =
+        {
+            // pentru hexagonul mare
+            6, 0, 1,    // ACD
+            6, 1, 2,    // ADE
+            6, 2, 3,    // AEF
+            6, 3, 4,    // AFB
+            6, 4, 5,    // ABG
+            6, 5, 0,    // AGC
+        };
+
+        Mesh* mesh_hexagon = new Mesh("hexagon_mare");
+        mesh_hexagon->InitFromData(vertecsi13, indici13);
+        meshes[mesh_hexagon->GetMeshID()] = mesh_hexagon;
+        //CreateMesh("hexagon_mare", vertecsi13, indici13);
+
+
+
+        vector<VertexFormat> vertecsi14
+        {
+        // pentru hexagonul mic din interior 
+        VertexFormat(glm::vec3(0, 4, 2), glm::vec3(0, 0.652, 1), glm::vec3(0.2, 0.8, 0.6)),       // H - 7 0
+        VertexFormat(glm::vec3(-3.57, 2.03, 2), glm::vec3(0, 0.652, 1), glm::vec3(0.2, 0.8, 0.6)),   // I -  8 1
+        VertexFormat(glm::vec3(-3.57, -1.95, 2), glm::vec3(0, 0.652, 1), glm::vec3(0.2, 0.8, 0.6)),  // J - 9 2
+        VertexFormat(glm::vec3(0, -4, 2), glm::vec3(0, 0.652 , 1), glm::vec3(0.2, 0.8, 0.6)),      // K - 10 3
+        VertexFormat(glm::vec3(3.54, -2.03, 2), glm::vec3(0, 0.652, 1), glm::vec3(0.2, 0.8, 0.6)),   // M - 11 4
+        VertexFormat(glm::vec3(3.5, 2.03, 2), glm::vec3(0, 0.652, 1), glm::vec3(0.2, 0.8, 0.6)),    // L - 12 5
+        VertexFormat(glm::vec3(0.0, 0.0, 2), glm::vec3(1, 1, 1), glm::vec3(0.2, 0.8, 0.6)),    // A - 6
+        
+        };
+
+        vector<unsigned int> indici14 =
+        {
+            // pentru hexagonul mare
+            6, 0, 1,    // AHI
+            6, 1, 2,    // AIJ
+            6, 2, 3,    // AJK
+            6, 3, 4,    // AKM
+            6, 4, 5,    // AML
+            6, 5, 0,    // ALH
+           
+           
+
+              
+
+
+        };
+
+        //CreateMesh("hexagon_mic", vertecsi14, indici14);
+
+        Mesh* mesh_hexagon_mic = new Mesh("hexagon_mic");
+        mesh_hexagon_mic->InitFromData(vertecsi14, indici14);
+        meshes[mesh_hexagon_mic->GetMeshID()] = mesh_hexagon_mic;
+
+        // desenare proiectil (stea mai mare)
+         // desenare stea
+        vector<VertexFormat> vertecsi15
+        {
+            // prima data punctele exterioare (de pe cerc)
+            VertexFormat(glm::vec3(0.0 * 2, 2.00 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),     // C - 0
+            VertexFormat(glm::vec3(-1.91 * 2, 0.6 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),   // G -  1
+            VertexFormat(glm::vec3(-1.43 * 2, -1.4 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // D - 2
+            VertexFormat(glm::vec3(1.4 * 2, -1.43 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),    // E - 3
+            VertexFormat(glm::vec3(1.91 * 2, 0.6 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),    // F - 4
+            // coordonatele interioare
+            VertexFormat(glm::vec3(-0.59 * 2, 0.6 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // H - 5
+            VertexFormat(glm::vec3(-0.86 * 2, 0.6 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // J - 6
+            VertexFormat(glm::vec3(-0.02 * 2, -0.55 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // K - 7                                                                                          
+            VertexFormat(glm::vec3(0.84 * 2, -0.04 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // L - 8                                                                                            
+            VertexFormat(glm::vec3(0.57 * 2, 0.9 * 2, 0), glm::vec3(1, 0, 0.98), glm::vec3(0.2, 0.8, 0.6)),  // I - 9                                                                                            
+        };
+        vector<unsigned int> indici15 =
+        {
+           1, 7, 4,      // GKF
+           0, 2, 7,      // CDK
+           0, 7, 3       // CKE
+
+
+        };
+
+        CreateMesh("proiectil", vertecsi15, indici15);
+
+
+        
+
+
+
 
 
 
@@ -350,15 +469,15 @@ void TEMA1::Update(float deltaTimeSeconds)
     RenderMesh(meshes["dreptunghi"], shaders["VertexColor"], glm::vec3(-50.0f, -25.0f, 0), glm::vec3(0.25f));
 
     // desenare patrate
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -25.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -25.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -25.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -13.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -13.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -13.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -1.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -1.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -1.0f, 0), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -25.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -25.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -25.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -13.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -13.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -13.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -1.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -1.0f, 1), glm::vec3(0.25f));
+    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -1.0f, 1), glm::vec3(0.25f));
 
     // desenare patrate fara contur
     modelMatrix = glm::mat3(1);
@@ -404,7 +523,66 @@ void TEMA1::Update(float deltaTimeSeconds)
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(22.0f, 18.0f, 0), glm::vec3(0.25f));
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(26.0f, 18.0f, 0), glm::vec3(0.25f));
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(30.0f, 18.0f, 0), glm::vec3(0.25f));
+
+    //RenderMesh(meshes["hexagon_mare"], shaders["VertexColor"], glm::vec3(0.0f, 0.0f, 1), glm::vec3(0.25f));
+    //RenderMesh(meshes["hexagon_mic"], shaders["VertexColor"], glm::vec3(0.0f, 0.0f, 1.1f), glm::vec3(0.25f));
     
+    
+    /*
+    * translatie inamic din partea dreapta a scenei, 
+      dispare la linia rosie,
+      are coordonate pentru patratele din mijloc
+    */ 
+    translate_hexagon_X += deltaTimeSeconds * -5.0f;
+    modelMatrix = glm::mat3(1);
+    modelMatrix *= transform2D::Translate(50, -8.0f);
+    if (translate_hexagon_X > -91.0f) {
+        modelMatrix *= transform2D::Translate(translate_hexagon_X, 0.0f);
+        RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+        RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+        
+    }
+    
+    // translatie + rotatie proiectil (ulterior va fi utila cand voi aseza proiectile
+    // la iesirea din romb atunci cand sunt inamici pe linie)
+        
+    modelMatrix = glm::mat3(1);
+    translate_stea_X += deltaTimeSeconds * 10.0f;
+    modelMatrix *= transform2D::Translate(10, 4);
+    modelMatrix *= transform2D::Translate(translate_stea_X, 0.0f);
+    radiani -= deltaTimeSeconds * 3;
+    modelMatrix *= transform2D::Rotate(radiani);
+    RenderMesh2D(meshes["proiectil"], shaders["VertexColor"], modelMatrix);
+
+    // scalare pentru disparitie romb (va fi utila in doua cazuri ce vor urma mai tarziu)
+    // scalare pana la (0, 0) efect de disparitie
+    modelMatrix = glm::mat3(1);
+    
+
+    if (scaleX >= 0.0) {
+        scaleX += deltaTimeSeconds * -0.2;
+        //mentine forma de patrat
+        scaleY = scaleX;
+        modelMatrix *= transform2D::Scale(scaleX, scaleY);
+        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+    }
+
+    //RenderMesh(meshes["romb_1"], shaders["VertexColor"], glm::vec3(-1.0f, -25.0f, 0), glm::vec3(0.25f));
+    //RenderMesh(meshes["dreptunghi_romb_1"], shaders["VertexColor"], glm::vec3(1.0f, -22.0f, 0), glm::vec3(0.25f));
+
+    if (scaleX >= 0.0) {
+        scaleX += deltaTimeSeconds * -0.2;
+        //mentine forma de patrat
+        scaleY = scaleX;
+        modelMatrix *= transform2D::Scale(scaleX, scaleY);
+        RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+        RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+    }
+
+   
+    
+
 
 
 
