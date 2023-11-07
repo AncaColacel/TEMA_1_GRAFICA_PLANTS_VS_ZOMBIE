@@ -1,4 +1,4 @@
-#include "lab_m1/TEMA1/TEMA1.h"
+﻿#include "lab_m1/TEMA1/TEMA1.h"
 
 #include <vector>
 #include <iostream>
@@ -25,13 +25,17 @@ TEMA1::~TEMA1()
 {
 }
 
-// declare variabile
-float  translate_hexagon_X, translate_hexagon_Y, scaleX, scaleY, angularStep;
-float radiani, translate_stea_X, translate_stea_Y;
+
+
+
+
+
 
 void TEMA1::Init()
 {
+    glm::ivec2 resolution = window->GetResolution();
     auto camera = GetSceneCamera();
+    camera->SetOrthographic(0, (float)resolution.x, 0, (float)resolution.y, 0.01f, 400);
     camera->SetPosition(glm::vec3(0, 0, 50));
     camera->SetRotation(glm::vec3(0, 0, 0));
     camera->Update();
@@ -40,7 +44,9 @@ void TEMA1::Init()
     // initializare date pentru transformari
     
 
-    translate_hexagon_X = 0;
+    translate_hexagon_X_1 = 50;
+    translate_hexagon_X_2 = 50;
+    translate_hexagon_X_3 = 50;
     translate_hexagon_Y = 0;
 
     translate_stea_X = 0;
@@ -52,10 +58,21 @@ void TEMA1::Init()
 
     angularStep = 0;
 
+   
+    interval = 3;
+
+    time = 0.0f;
+
+    linie_sus = 0;
+    linie_jos = 0;
+    linie_mijloc = 0;
+
+    radiani = 0.0f;
+
     
 
     {
-        /*
+       /*
        * creare vertecsi pentru dreptunghiul bara rosie
        */
         vector<VertexFormat> vertecsi1
@@ -126,7 +143,7 @@ void TEMA1::Init()
         Mesh* patrat_c_3 = object2D::CreateSquare("patrat_c_3", corner_3, length, glm::vec3(1, 0, 0));
         AddMeshToList(patrat_c_3);
 
-        // creare patrat doar contur
+        // creare patrat doar contur 4
 
         // aici setez pozitia (fata de corner) 4)
         glm::vec3 corner_4 = glm::vec3(-2, 18, 0);
@@ -377,11 +394,6 @@ void TEMA1::Init()
             6, 4, 5,    // AML
             6, 5, 0,    // ALH
            
-           
-
-              
-
-
         };
 
         //CreateMesh("hexagon_mic", vertecsi14, indici14);
@@ -417,33 +429,13 @@ void TEMA1::Init()
         };
 
         CreateMesh("proiectil", vertecsi15, indici15);
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
     }
 
 }
+
+
+
+
 
 
 
@@ -463,21 +455,26 @@ void TEMA1::FrameStart()
 void TEMA1::Update(float deltaTimeSeconds)
 {
     glm::ivec2 resolution = window->GetResolution();
-
+    glViewport(0, 0, resolution.x, resolution.y);
+    
 
     // desenare dreptunghi
     RenderMesh(meshes["dreptunghi"], shaders["VertexColor"], glm::vec3(-50.0f, -25.0f, 0), glm::vec3(0.25f));
 
+
     // desenare patrate
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -25.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -25.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -25.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -13.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -13.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -13.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f, -1.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-30.0f, -1.0f, 1), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-18.0f, -1.0f, 1), glm::vec3(0.25f));
+    for (int i = 0; i < 36; i = i + 12) {
+        RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f + i, -25.0f, 1), glm::vec3(0.25f));
+    }
+
+    for (int i = 0; i < 36; i = i + 12) {
+        RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f + i, -13.0f, 1), glm::vec3(0.25f));
+    }
+    
+    for (int i = 0; i < 36; i = i + 12) {
+        RenderMesh(meshes["patrat"], shaders["VertexColor"], glm::vec3(-42.0f + i, -1.0f, 1), glm::vec3(0.25f));
+    }
+   
 
     // desenare patrate fara contur
     modelMatrix = glm::mat3(1);
@@ -488,11 +485,13 @@ void TEMA1::Update(float deltaTimeSeconds)
 
 
     // desenare patrate mai mici pentru bonus
-    RenderMesh(meshes["patrat_viata"], shaders["VertexColor"], glm::vec3(14.0f, 20.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat_viata"], shaders["VertexColor"], glm::vec3(24.0f, 20.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["patrat_viata"], shaders["VertexColor"], glm::vec3(34.0f, 20.0f, 0), glm::vec3(0.25f));
+    for (int i = 0; i < 35; i = i + 10) {
+        RenderMesh(meshes["patrat_viata"], shaders["VertexColor"], glm::vec3(14.0 + i, 20.0f, 0), glm::vec3(0.25f));
+    }
+    
 
     // desenare proiectile
+   
     RenderMesh(meshes["romb_1"], shaders["VertexColor"], glm::vec3(-41.0f, 19.0f, 0), glm::vec3(0.25f));
     RenderMesh(meshes["dreptunghi_romb_1"], shaders["VertexColor"], glm::vec3(-39.0f, 22.0f, 0), glm::vec3(0.25f));
 
@@ -506,6 +505,7 @@ void TEMA1::Update(float deltaTimeSeconds)
     RenderMesh(meshes["dreptunghi_romb_4"], shaders["VertexColor"], glm::vec3(3.0f, 22.0f, 0), glm::vec3(0.25f));
 
     // desenare stele
+
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(-42.0f, 16.0f, 0), glm::vec3(0.25f));
 
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(-28.0f, 16.0f, 0), glm::vec3(0.25f));
@@ -514,71 +514,145 @@ void TEMA1::Update(float deltaTimeSeconds)
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(-14.0f, 16.0f, 0), glm::vec3(0.25f));
     RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(-10.0f, 16.0f, 0), glm::vec3(0.25f));
 
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(0.0f, 16.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(4.0f, 16.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(8.0f, 16.0f, 0), glm::vec3(0.25f));
-
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(14.0f, 18.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(18.0f, 18.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(22.0f, 18.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(26.0f, 18.0f, 0), glm::vec3(0.25f));
-    RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(30.0f, 18.0f, 0), glm::vec3(0.25f));
-
-    //RenderMesh(meshes["hexagon_mare"], shaders["VertexColor"], glm::vec3(0.0f, 0.0f, 1), glm::vec3(0.25f));
-    //RenderMesh(meshes["hexagon_mic"], shaders["VertexColor"], glm::vec3(0.0f, 0.0f, 1.1f), glm::vec3(0.25f));
-    
-    
-    /*
-    * translatie inamic din partea dreapta a scenei, 
-      dispare la linia rosie,
-      are coordonate pentru patratele din mijloc
-    */ 
-    translate_hexagon_X += deltaTimeSeconds * -5.0f;
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(50, -8.0f);
-    if (translate_hexagon_X > -91.0f) {
-        modelMatrix *= transform2D::Translate(translate_hexagon_X, 0.0f);
-        RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-        RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-        
+    for (int i = 0; i < 9; i = i + 4) {
+        RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(0.0f + i, 16.0f, 0), glm::vec3(0.25f));
     }
+
+    for (int i = 0; i < 31; i = i + 4) {
+        RenderMesh(meshes["stea"], shaders["VertexColor"], glm::vec3(14.0f + i, 18.0f, 0), glm::vec3(0.25f));
+    }
+    
+  
+    
+    
+   // aparitie aleatoare de inamici de aceeasi culoare
+    time = time + deltaTimeSeconds;
+    if (time > interval) {
+        randomPosition = std::rand() % 3;
+        //cout << "RandomPos: " << randomPosition << endl;
+        time = 0;
+        
+        // le pun pe 1 ca sa marchez ca da, trebuie desenat pe linia asta
+        // astfel pot intra in mai multe conditii in aceeasi parcurgere
+        if (randomPosition == 0) {
+            linie_jos = 1; // -20
+           
+        }
+        if (randomPosition == 1) {
+            linie_mijloc = 1; // -8
+        }
+        if (randomPosition == 2) {
+            linie_sus = 1; // 4
+        }
+    }
+        if (linie_sus == 1) {
+            yOffset = 4.0f;  // Prima poziție
+            if (translate_hexagon_X_1 > -39.0f) {
+                translate_hexagon_X_1 += deltaTimeSeconds * -15;
+                glm::mat3 modelMatrix = glm::mat3(1);
+                modelMatrix *= transform2D::Translate(translate_hexagon_X_1, yOffset);
+                RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+                RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+                //cout << "dupa render" << endl;
+            }
+            if (translate_hexagon_X_1 < -39.0f) {
+
+                translate_hexagon_X_1 = 50;
+                linie_sus = 0;
+            }
+        }
+       
+        if (linie_mijloc == 1) {
+            yOffset = -8.0f; // A doua poziție
+            if (translate_hexagon_X_2 > -39.0f) {
+                translate_hexagon_X_2 += deltaTimeSeconds * -15;
+                glm::mat3 modelMatrix = glm::mat3(1);
+                modelMatrix *= transform2D::Translate(translate_hexagon_X_2, yOffset);
+                
+                RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+                RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+                //cout << "dupa render" << endl;
+            }
+            if (translate_hexagon_X_2 < -39.0f) {
+                cout << "in if" << endl;
+                translate_hexagon_X_2 = 50;
+                linie_mijloc = 0;
+            }
+        }
+        if (linie_jos == 1) {
+            yOffset = -20.0f; // A treia poziție
+            if (translate_hexagon_X_3 > -39.0f) {
+                translate_hexagon_X_3 += deltaTimeSeconds * -15;
+                glm::mat3 modelMatrix = glm::mat3(1);
+                modelMatrix *= transform2D::Translate(translate_hexagon_X_3, yOffset);
+                RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+                RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+                //cout << "dupa render" << endl;
+            }
+            if (translate_hexagon_X_3 < -39.0f) {
+                //cout << "in if" << endl;
+                translate_hexagon_X_3 = 50;
+                linie_jos = 0;
+            }
+                
+        }
+        RenderMesh(meshes["patrat_viata"], shaders["VertexColor"], glm::vec3(0, 0, 0), glm::vec3(0.25f));
+        // desen romb
+        RenderMesh(meshes["romb_1"], shaders["VertexColor"], glm::vec3(pos1, pos2, 1), glm::vec3(0.25f));
+        RenderMesh(meshes["dreptunghi_romb_1"], shaders["VertexColor"], glm::vec3(pos1 + 2.0, pos2 + 3.0, 1), glm::vec3(0.25f));
+        //RenderMesh(meshes["romb_1"], shaders["VertexColor"], glm::vec3(-40.0, -24.f, 1), glm::vec3(0.25f));
+        //RenderMesh(meshes["dreptunghi_romb_1"], shaders["VertexColor"], glm::vec3(-38, -21, 1), glm::vec3(0.25f));
+    
+
+       
+    
+
+
+   
+    
+    
     
     // translatie + rotatie proiectil (ulterior va fi utila cand voi aseza proiectile
     // la iesirea din romb atunci cand sunt inamici pe linie)
+
+      
         
-    modelMatrix = glm::mat3(1);
+   /* modelMatrix = glm::mat3(1);
     translate_stea_X += deltaTimeSeconds * 10.0f;
     modelMatrix *= transform2D::Translate(10, 4);
     modelMatrix *= transform2D::Translate(translate_stea_X, 0.0f);
     radiani -= deltaTimeSeconds * 3;
     modelMatrix *= transform2D::Rotate(radiani);
-    RenderMesh2D(meshes["proiectil"], shaders["VertexColor"], modelMatrix);
+    RenderMesh2D(meshes["proiectil"], shaders["VertexColor"], modelMatrix);*/
 
     // scalare pentru disparitie romb (va fi utila in doua cazuri ce vor urma mai tarziu)
     // scalare pana la (0, 0) efect de disparitie
-    modelMatrix = glm::mat3(1);
+    //modelMatrix = glm::mat3(1);
+    //if (scaleX >= 0.0) {
+    //    scaleX += deltaTimeSeconds * -0.2;
+    //    //mentine forma de patrat
+    //    scaleY = scaleX;
+    //    modelMatrix *= transform2D::Scale(scaleX, scaleY);
+    //    string s1 = "romb_1";
+    //    RenderMesh2D(meshes[s1], shaders["VertexColor"], modelMatrix);
+    //    RenderMesh2D(meshes[s1], shaders["VertexColor"], modelMatrix);
+    //}
+
+    // la fel scalare pt inamic cand va fi cazul
     
 
-    if (scaleX >= 0.0) {
-        scaleX += deltaTimeSeconds * -0.2;
-        //mentine forma de patrat
-        scaleY = scaleX;
-        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-    }
+    //if (scaleX >= 0.0) {
+    //    scaleX += deltaTimeSeconds * -0.2;
+    //    //mentine forma de patrat
+    //    scaleY = scaleX;
+    //    modelMatrix *= transform2D::Scale(scaleX, scaleY);
+    //    RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+    //    RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+    //}
 
-    //RenderMesh(meshes["romb_1"], shaders["VertexColor"], glm::vec3(-1.0f, -25.0f, 0), glm::vec3(0.25f));
-    //RenderMesh(meshes["dreptunghi_romb_1"], shaders["VertexColor"], glm::vec3(1.0f, -22.0f, 0), glm::vec3(0.25f));
 
-    if (scaleX >= 0.0) {
-        scaleX += deltaTimeSeconds * -0.2;
-        //mentine forma de patrat
-        scaleY = scaleX;
-        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-        RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-        RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-    }
+    
+    
 
    
     
@@ -597,66 +671,58 @@ void TEMA1::Update(float deltaTimeSeconds)
 
 }
 
+
+
+//void TEMA1::TranslateRotate(string mesh, float deltaTimeSeconds, float translate) {
+//    modelMatrix = glm::mat3(1);
+//    translate += deltaTimeSeconds * 10.0f;
+//    modelMatrix *= transform2D::Translate(10, 4);
+//    modelMatrix *= transform2D::Translate(translate, 0.0f);
+//    radiani -= deltaTimeSeconds * 3;
+//    modelMatrix *= transform2D::Rotate(radiani);
+//    RenderMesh2D(meshes[mesh], shaders["VertexColor"], modelMatrix);
+//}
+
+
+
+
+
 void TEMA1::CreateMesh(const char* name, const std::vector<VertexFormat>& vertices, const std::vector<unsigned int>& indices)
 {
     unsigned int VAO = 0;
-    // TODO(student): Create the VAO and bind it
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
 
     unsigned int VBO = 0;
-    // TODO(student): Create the VBO and bind it
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-
-    // TODO(student): Send vertices data into the VBO buffer
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
     unsigned int IBO = 0;
-    // TODO(student): Create the IBO and bind it
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-
-    // TODO(student): Send indices data into the IBO buffer
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
-    // ========================================================================
-    // This section demonstrates how the GPU vertex shader program
-    // receives data. It will be learned later, when GLSL shaders will be
-    // introduced. For the moment, just think that each property value from
-    // our vertex format needs to be sent to a certain channel, in order to
-    // know how to receive it in the GLSL vertex shader.
-
-    // Set vertex position attribute
+   
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), 0);
 
-    // Set vertex normal attribute
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(sizeof(glm::vec3)));
 
-    // Set texture coordinate attribute
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3)));
 
-    // Set vertex color attribute
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
-    // ========================================================================
-
-    // TODO(student): Unbind the VAO
     glBindVertexArray(0);
 
-    // Check for OpenGL errors
     if (GetOpenGLError() == GL_INVALID_OPERATION)
     {
         cout << "\t[NOTE] : For students : DON'T PANIC! This error should go away when completing the tasks." << std::endl;
         cout << "\t[NOTE] : For developers : This happens because OpenGL core spec >=3.1 forbids null VAOs." << std::endl;
     }
-
-    // Mesh information is saved into a Mesh object
     meshes[name] = new Mesh(name);
     meshes[name]->InitFromBuffer(VAO, static_cast<unsigned int>(indices.size()));
 }
@@ -665,7 +731,7 @@ void TEMA1::CreateMesh(const char* name, const std::vector<VertexFormat>& vertic
 
 void TEMA1::FrameEnd()
 {
-    
+    //DrawCoordinateSystem();
 }
 
 
@@ -675,10 +741,6 @@ void TEMA1::DrawScene(glm::mat3 visMatrix)
 }
 
 
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
 
 
 void TEMA1::OnInputUpdate(float deltaTime, int mods)
@@ -700,12 +762,19 @@ void TEMA1::OnKeyRelease(int key, int mods)
 void TEMA1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
     // Add mouse move event
+    cout << mouseX << " " << mouseY << endl;
+   
+   
 }
 
 
 void TEMA1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
     // Add mouse button press event
+    //cout << mouseX << " " << mouseY << endl;
+    pos1 = mouseX + pos1;
+    pos2 = mouseY + pos2;
+    
 }
 
 
