@@ -67,6 +67,8 @@ namespace m1
         void CreareHexagon(float R1, float G1, float B1, float R2, float G2, float B2);
         float RandomFloat(float min, float max);
         bool isPointNear(float x, float y, float targetX, float targetY, float distanceThreshold);
+        void ColiziuneRH(glm::vec2 centru_hexagon, glm::vec2 centru_romb_rezultat);
+       
         
         
         
@@ -101,8 +103,14 @@ namespace m1
         glm::vec2 centru_proiectil;
         float distanta_centre;
         int coliziune;
-        int patrat_1, patrat_2, patrat_3, patrat_4, patrat_5, patrat_6, patrat_7, patrat_8, patrat_9;
+        int patrat_1_p, patrat_2_p, patrat_3_p, patrat_4_p, patrat_5_p, patrat_6_p, patrat_7_p, patrat_8_p, patrat_9_p;
+        int patrat_1_m, patrat_2_m, patrat_3_m, patrat_4_m, patrat_5_m, patrat_6_m, patrat_7_m, patrat_8_m, patrat_9_m;
+        int patrat_1_a, patrat_2_a, patrat_3_a, patrat_4_a, patrat_5_a, patrat_6_a, patrat_7_a, patrat_8_a, patrat_9_a;
         glm::vec2 centru_proiectil_rezultat;
+        glm::vec2 centru_romb_sus;
+        glm::vec2 centru_romb_mijloc;
+        glm::vec2 centru_romb_jos;
+        glm::vec2 centru_hexagon_RH;
         int culoare_a, culoare_m, culoare_p, culoare_g;
         int mouse_dreapta;
         int mouse_dr_1, mouse_dr_2, mouse_dr_3;
@@ -123,6 +131,9 @@ namespace m1
         float release_p1_x, release_p1_y, release_p2_x, release_p2_y, release_p3_x, release_p3_y;
         float  release_p4_x, release_p4_y, release_p5_x, release_p5_y, release_p6_x, release_p6_y;
         float  release_p7_x, release_p7_y, release_p8_x, release_p8_y, release_p9_x, release_p9_y;
+        float distanta_centre_HR;
+        int coliziune_HR;
+        float scalare_romb;
 
     };
 }   // namespace m1
