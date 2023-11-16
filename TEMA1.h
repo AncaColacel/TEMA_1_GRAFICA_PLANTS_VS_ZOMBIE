@@ -61,7 +61,7 @@ namespace m1
         glm::mat3 VisualizationTransf2DUnif(const LogicSpace& logicSpace, const ViewportSpace& viewSpace);
         void SetViewportArea(const ViewportSpace& viewSpace, glm::vec3 colorColor = glm::vec3(0), bool clear = true);
         void CreateStar(float R, float G, float B);
-        glm::vec2 AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float x, float y);
+        glm::vec2 AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float x, float y, float radiani);
         void DisparitieMesh(float deltaTimeSeconds);
         void ColiziuneSH(glm::vec2 centru_hexagon, glm::vec2 centru_proiectil_rezultat);
         void CreareHexagon(float R1, float G1, float B1, float R2, float G2, float B2);
@@ -103,9 +103,13 @@ namespace m1
         glm::vec2 centru_proiectil;
         float distanta_centre;
         int coliziune;
+        int coliziune_sus;
+        int coliziune_jos;
+        int coliziune_mijl;
         int patrat_1_p, patrat_2_p, patrat_3_p, patrat_4_p, patrat_5_p, patrat_6_p, patrat_7_p, patrat_8_p, patrat_9_p;
         int patrat_1_m, patrat_2_m, patrat_3_m, patrat_4_m, patrat_5_m, patrat_6_m, patrat_7_m, patrat_8_m, patrat_9_m;
         int patrat_1_a, patrat_2_a, patrat_3_a, patrat_4_a, patrat_5_a, patrat_6_a, patrat_7_a, patrat_8_a, patrat_9_a;
+        int patrat_1_g, patrat_2_g, patrat_3_g, patrat_4_g, patrat_5_g, patrat_6_g, patrat_7_g, patrat_8_g, patrat_9_g;
         glm::vec2 centru_proiectil_rezultat;
         glm::vec2 centru_romb_sus;
         glm::vec2 centru_romb_mijloc;
