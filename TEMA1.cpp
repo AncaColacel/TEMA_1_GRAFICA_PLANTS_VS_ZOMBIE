@@ -66,7 +66,7 @@ void TEMA1::Init()
     angularStep = 0;
 
    
-    interval = 2;
+    interval = 4;
 
     time = 0.0f;
 
@@ -170,7 +170,7 @@ void TEMA1::Init()
     timp_resursa = 0.0f;
     nr_resurse = 0;
     nr_max_resurse = 3;
-    interval_resurse = 7.0f;
+    interval_resurse = 17.0f;
     resursa = 0;
     contor_stea = 0;
 
@@ -184,7 +184,27 @@ void TEMA1::Init()
     mouse_dr_4 = 0, mouse_dr_5 = 0, mouse_dr_6 = 0;
     mouse_dr_7 = 0, mouse_dr_8 = 0, mouse_dr_9 = 0;
 
-    
+    x_temp = 0.0f;
+    interval_p = 4;
+    timp_p = 0.0;
+    aux_p = 0;
+
+    for (int i = 0; i < v_h_linie_jos.size(); i++) {
+        v_h_linie_jos[i].scale = 1.0;
+    }
+
+    for (int i = 0; i < v_h_linie_mijl.size(); i++) {
+        v_h_linie_mijl[i].scale = 1.0;
+    }
+
+    for (int i = 0; i < v_h_linie_sus.size(); i++) {
+        v_h_linie_sus[i].scale = 1.0;
+    }
+
+    for (int i = 0; i < proiectile.size(); i++) {
+        proiectile[i].scalare = 1.0;
+    }
+        
 
     {
         /*
@@ -627,12 +647,6 @@ void TEMA1::Update(float deltaTimeSeconds)
       
       
    
-   
-   
-
-
-
-
        // aparitie aleatoare de inamici de culori diferite
 
        time = time + deltaTimeSeconds;
@@ -641,226 +655,166 @@ void TEMA1::Update(float deltaTimeSeconds)
            randomColour = std::rand() % 4;
            time = 0;
 
+           
+           if (randomColour == 0) {
+               R = 0;
+               G = 0.33;
+               B = 1;
+           }
+           if (randomColour == 1) {
+               R = 0.612;
+               G = 0;
+               B = 1;
+           }
+           if (randomColour == 2) {
+               R = 1;
+               G = 0.38;
+               B = 0;
+           }
+           if (randomColour == 3) {
+               R = 1;
+               G = 0.98;
+               B = 0;
+           }
+
            // le pun pe 1 ca sa marchez ca da, trebuie desenat pe linia asta
            // astfel pot intra in mai multe conditii in aceeasi parcurgere
            if (randomPosition == 0) {
                linie_jos = 1; // -20
+               v_h_linie_jos.push_back({ 1200, 80, 0, 0, R, G, B, 0 });
 
            }
            if (randomPosition == 1) {
                linie_mijloc = 1; // -8
+               v_h_linie_mijl.push_back({ 1200, 270, 0, 0, R, G, B, 0 });
            }
            if (randomPosition == 2) {
                linie_sus = 1; // 4
-           }
-           if (randomColour == 0) {
-               culoare_a = 1;
-           }
-           if (randomColour == 1) {
-               culoare_m = 1;
-           }
-           if (randomColour == 2) {
-               culoare_p = 1;
-           }
-           if (randomColour == 3) {
-               culoare_g = 1;
+               v_h_linie_sus.push_back({ 1200, 440, 0, 0, R, G, B, 0 });
            }
        }
 
-       if (linie_jos == 1) {
-           yOffset = 80;  // Prima poziție
-           // daca s a ales 0 -> albastru
-           if (translate_hexagon_X_1 > 120.0f) {
-               translate_hexagon_X_1 -= deltaTimeSeconds * 150;
-               centru_hexagon = glm::vec2(1200 - translate_stea_X, yOffset);
-               ColiziuneSH(centru_hexagon, centru_proiectil_rezultat);
-               coliziune_jos = coliziune;
-               if (coliziune_jos == 0) {
+        
+           linie_jos = 0;
+           int aux1 = -1;
+           for (int i = 0; i < v_h_linie_jos.size(); i++) {
+               aux1 = i;
+               if (v_h_linie_jos[i].x > 120.0f) {
+                   linie_jos = 1;
+                   v_h_linie_jos[i].x -= deltaTimeSeconds * 150;
+                   v_h_linie_jos[i].centru_h = glm::vec2(v_h_linie_jos[i].x, v_h_linie_jos[i].y);
                    glm::mat3 modelMatrix = glm::mat3(1);
-                   modelMatrix *= transform2D::Translate(translate_hexagon_X_1, yOffset);
+                   modelMatrix *= transform2D::Translate(v_h_linie_jos[i].x, v_h_linie_jos[i].y);
                    modelMatrix *= transform2D::Scale(8, 8);
-                   CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
+                   CreareHexagon(0.353, 0.851, 0.275, v_h_linie_jos[i].R, v_h_linie_jos[i].G, v_h_linie_jos[i].B);
                    RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
                    RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+                  
+                   
                }
-               else {
-                   modelMatrix = glm::mat3(1);
-                   if (scaleX >= 0.0) {
-                       scaleX += deltaTimeSeconds * -5;
-                       //mentine forma uniforma
-                       scaleY = scaleX;
-                       modelMatrix *= transform2D::Scale(scaleX, scaleY);
-                       CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
-                       RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-
-                   }
-
-               }
-           }
-
-           if (translate_hexagon_X_1 > 220.0f && coliziune_jos == 1) {
-               translate_hexagon_X_1 = 1200;
-               linie_jos = 0;
-               coliziune_jos = 0;
-               coliziune = 0;
-               scalare_proiectil = 1.0f;
-               translate_stea_X = 0;
-               cout << "coliziune din if jos" << coliziune_jos << endl;
-           }
-
-           if (translate_hexagon_X_1 < 120.0f && coliziune_jos == 0) {
-               translate_hexagon_X_1 = 1200;
-               linie_jos = 0;
-               culoare_a = 0;
-               nr_vieti--;
-               /*if (nr_vieti == 0) {
-                   exit(0);
-               }*/
-           }
-
-
-       }
-
-
-       if (linie_mijloc == 1) {
-           yOffset = 270; // A doua poziție
-           if (translate_hexagon_X_2 > 120) {
-               translate_hexagon_X_2 -= deltaTimeSeconds * 150;
-               centru_hexagon = glm::vec2(1200 - translate_stea_X, yOffset);
-               ColiziuneSH(centru_hexagon, centru_proiectil_rezultat);
-               coliziune_mijl = coliziune;
-               if (coliziune_mijl == 0) {
-                   glm::mat3 modelMatrix = glm::mat3(1);
-                   modelMatrix *= transform2D::Translate(translate_hexagon_X_2, yOffset);
-                   modelMatrix *= transform2D::Scale(8, 8);
-                   CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
-                   RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-                   RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-               }
-               else if (coliziune_mijl == 1) {
-                   modelMatrix = glm::mat3(1);
-                   if (scaleX >= 0.0) {
-                       scaleX += deltaTimeSeconds * -5;
-                       //mentine forma uniforma
-                       scaleY = scaleX;
-                       modelMatrix *= transform2D::Scale(scaleX, scaleY);
-                       CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
-                       RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-
-                   }
-
-               }
-           }
-
-           if (translate_hexagon_X_2 > 220.0f && coliziune_mijl == 1) {
-               translate_hexagon_X_2 = 1200;
-               linie_mijloc = 0;
-               coliziune = 0;
-               coliziune_mijl = 0;
-               scalare_proiectil = 1.0f;
-               translate_stea_X = 0;
-               cout << "coliziune din if mijl" << coliziune << endl;
-           }
-
-
-           if (translate_hexagon_X_2 < 120.0f && coliziune_mijl == 0) {
-               translate_hexagon_X_2 = 1200;
-               linie_mijloc = 0;
-               culoare_a = 0;
-               nr_vieti--;
-               /*if (nr_vieti == 0) {
-                   exit(0);
-               }*/
-
-           }
-
-       }
-
-       if (linie_sus == 1) {
-           yOffset = 440; // A treia poziție
-           if (translate_hexagon_X_3 > 120) {
-               translate_hexagon_X_3 -= deltaTimeSeconds * 150;
-               centru_hexagon = glm::vec2(1200 - translate_stea_X, yOffset);
-               //centru_hexagon_RH = glm::vec2(1200 + translate_hexagon_X_3, yOffset);
-               ColiziuneSH(centru_hexagon, centru_proiectil_rezultat);
-               //ColiziuneRH(centru_hexagon_RH, centru_romb_sus);
-               coliziune_sus = coliziune;
-               if (coliziune_sus == 0) {
-                   glm::mat3 modelMatrix = glm::mat3(1);
-                   modelMatrix *= transform2D::Translate(translate_hexagon_X_3, yOffset);
-                   modelMatrix *= transform2D::Scale(8, 8);
-                   CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
-                   RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-                   RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-
-               }
-               else if (coliziune_sus == 1) {
-                   modelMatrix = glm::mat3(1);
-                   if (scaleX >= 0.0) {
-                       scaleX += deltaTimeSeconds * -5;
-                       //mentine forma uniforma
-                       scaleY = scaleX;
-                       modelMatrix *= transform2D::Scale(scaleX, scaleY);
-                       CreareHexagon(0, 0.094, 1, 0, 0.652, 1);
-                       RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
-                       
-                       
-                      
-
-
+               if (v_h_linie_jos[i].x < 120.0f) {
+                   v_h_linie_jos.erase(v_h_linie_jos.begin() + aux1);
+                   aux1 = -1;
+                   nr_vieti--;
+                   if (nr_vieti == 0) {
+                       exit(0);
                    }
 
                }
                
            }
-           if (translate_hexagon_X_3 > 220.0f && coliziune_sus == 1) {
-               translate_hexagon_X_3 = 1200;
-               linie_sus = 0;
-               coliziune = 0;
-               coliziune_sus = 0;
-               //scalare_proiectil = 1.0f;
-               //translate_stea_X = 0;
-               cout << "coliziune din if sus" << coliziune << endl;
+          
+       
+           linie_mijloc = 0;
+           int aux2 = -1;
+           for (int i = 0; i < v_h_linie_mijl.size(); i++) {
+               aux2 = i;
+               if (v_h_linie_mijl[i].x > 120.0f) {
+                   aux2 = i;
+                   linie_mijloc = 1;
+                   v_h_linie_mijl[i].x -= deltaTimeSeconds * 150;
+                   v_h_linie_mijl[i].centru_h = glm::vec2(v_h_linie_mijl[i].x, v_h_linie_mijl[i].y);
+                   glm::mat3 modelMatrix = glm::mat3(1);
+                   modelMatrix *= transform2D::Translate(v_h_linie_mijl[i].x, v_h_linie_mijl[i].y);
+                   modelMatrix *= transform2D::Scale(8, 8);
+                   CreareHexagon(0.353, 0.851, 0.275, v_h_linie_mijl[i].R, v_h_linie_mijl[i].G, v_h_linie_mijl[i].B);
+                   RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+                   RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+
+                   
+                 
+               }
+               if (v_h_linie_mijl[i].x < 120.0f) {
+                   v_h_linie_mijl.erase(v_h_linie_mijl.begin() + aux2);
+                   aux2 = -1;
+                   nr_vieti--;
+                   if (nr_vieti == 0) {
+                       exit(0);
+                   }
+               }
+           }
+
+          
+
+
+
+       
+       
+
+            linie_sus = 0;
+            int aux3 = -1;
+            for (int i = 0; i < v_h_linie_sus.size(); i++) {
+                aux3 = i;
+                if (v_h_linie_sus[i].x > 120.0f) {
+                   linie_sus = 1;
+                    v_h_linie_sus[i].x -= deltaTimeSeconds * 150;
+                    v_h_linie_sus[i].centru_h = glm::vec2(v_h_linie_sus[i].x, v_h_linie_sus[i].y);
+                    glm::mat3 modelMatrix = glm::mat3(1);
+                    modelMatrix *= transform2D::Translate(v_h_linie_sus[i].x, v_h_linie_sus[i].y);
+                    modelMatrix *= transform2D::Scale(8, 8);
+                    CreareHexagon(0.353, 0.851, 0.275, v_h_linie_sus[i].R, v_h_linie_sus[i].G, v_h_linie_sus[i].B);
+                    RenderMesh2D(meshes["hexagon_mare"], shaders["VertexColor"], modelMatrix);
+                    RenderMesh2D(meshes["hexagon_mic"], shaders["VertexColor"], modelMatrix);
+
+          
+           
+                }
+                if (v_h_linie_sus[i].x < 120.0f) {
+                    v_h_linie_sus.erase(v_h_linie_sus.begin() + aux3);
+                    aux3 = -1;
+                    nr_vieti--;
+                    if (nr_vieti == 0) {
+                        exit(0);
+                    }
+                }
+            }
+
+            
+
+            // verific ce culoare am ales cu mouse-ul
+
+           // pentru primul patrat de contur am portocaliu
+           if (x_apasat_mouse >= 20 && x_apasat_mouse <= 100 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
+               romb_portocaliu = 1;
+           }
+           // pentru al doilea patrat de contur am mov
+           if (x_apasat_mouse >= 200 && x_apasat_mouse <= 280 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
+               romb_mov = 1;
+           }
+           // pentru al treilea patrat de contur am albastru
+           if (x_apasat_mouse >= 380 && x_apasat_mouse <= 460 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
+               romb_albastru = 1;
+           }
+           // pentru al treilea patrat de contur am galben
+           if (x_apasat_mouse >= 560 && x_apasat_mouse <= 640 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
+               romb_galben = 1;
            }
 
 
-           if (translate_hexagon_X_3 < 120.0f  && coliziune_sus == 0) {
-               translate_hexagon_X_3 = 1200;
-               linie_sus = 0;
-               nr_vieti--;
-               /*if (nr_vieti == 0) {
-                   exit(0);
-               }*/
-           }
-       }
-
-       // verific ce culoare am ales cu mouse-ul
-
-       // pentru primul patrat de contur am portocaliu
-       if (x_apasat_mouse >= 20 && x_apasat_mouse <= 100 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
-           romb_portocaliu = 1;
-       }
-       // pentru al doilea patrat de contur am mov
-       if (x_apasat_mouse >= 200 && x_apasat_mouse <= 280 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
-           romb_mov = 1;
-       }
-       // pentru al treilea patrat de contur am albastru
-       if (x_apasat_mouse >= 380 && x_apasat_mouse <= 460 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
-           romb_albastru = 1;
-       }
-       // pentru al treilea patrat de contur am galben
-       if (x_apasat_mouse >= 560 && x_apasat_mouse <= 640 && y_apasat_mouse <= 660 && y_apasat_mouse >= 560) {
-           romb_galben = 1;
-       }
 
 
 
-
-
-      // se face translatie dupa coordonatele de deplasare ale mouseului
+            // se face translatie dupa coordonatele de deplasare ale mouseului
        if (apasare_romb == 1) {
            if (romb_portocaliu == 1) {
                modelMatrix = glm::mat3(1);
@@ -917,10 +871,6 @@ void TEMA1::Update(float deltaTimeSeconds)
                    romb_portocaliu = 0;
                    mouse_dr_1 = 0;
 
-
-
-                   // cand pe acea linie am inamic sa iasa proiectil din romb
-
                }
 
 
@@ -933,8 +883,6 @@ void TEMA1::Update(float deltaTimeSeconds)
                    romb_portocaliu = 0;
                    mouse_dr_2 = 0;
 
-
-                   // cand pe acea linie am inamic sa iasa proiectil din romb
 
                }
 
@@ -1112,7 +1060,6 @@ void TEMA1::Update(float deltaTimeSeconds)
            }
 
 
-           // a + g
            if (romb_albastru == 1) {
 
                // incadrare in limitele primului patrat
@@ -1309,8 +1256,6 @@ void TEMA1::Update(float deltaTimeSeconds)
                }
            }
 
-
-
        }
 
 
@@ -1383,25 +1328,18 @@ void TEMA1::Update(float deltaTimeSeconds)
 
 
        
+       
+       if (patrat_1_p == 1) {
+           timp_p += deltaTimeSeconds;
 
-       if (patrat_1_p == 1 && patrat_1_m != 1) {
-           if (linie_sus == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 260, 440, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-                  
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+           if (linie_sus == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 260, 440, 0, 1, 1, 0.38, 0 });
 
            }
-            if (mouse_dr_1 == 0) {
+
+           // se deseneaza rombul cat timp nu dau clik dreapta
+           if (mouse_dr_1 == 0 && release_p1_x != 0 && release_p1_y != 0) {
                modelMatrix = glm::mat3(1);
                modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
                modelMatrix *= transform2D::Scale(3, 3);
@@ -1410,9 +1348,9 @@ void TEMA1::Update(float deltaTimeSeconds)
                modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
                modelMatrix *= transform2D::Scale(3, 3);
                RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-            }
-           // disparitie romb la apasare click dreapta
+           }
 
+           // disparitie romb la apasare click dreapta
            if (mouse_dr_1 == 1) {
                if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
                    if (scalare_romb_x >= 0.0) {
@@ -1423,36 +1361,23 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_1_p = 0;
-                       
-                       
-                      
+                       mouse_dr_1 = 0;
+
                    }
-                       
+
                }
 
            }
-
-           
        }
-      
 
-       if (patrat_2_p == 1 && patrat_2_m == 0) {
-           if (linie_sus == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 340, 440, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-                   
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+       if (patrat_2_p == 1) {
+           timp_p += deltaTimeSeconds;
 
+           if (linie_sus == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 340, 440, 0, 1, 1, 0.38, 0 });
            }
+              
            if (mouse_dr_2 == 0) {
                modelMatrix = glm::mat3(1);
                modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
@@ -1473,6 +1398,7 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_2_p = 0;
+                       mouse_dr_2 = 0;
                        
                        
                    }
@@ -1483,27 +1409,15 @@ void TEMA1::Update(float deltaTimeSeconds)
 
        }
 
-
-       if (patrat_3_p == 1 && patrat_3_m == 0) {
-           // cand pe acea linie am inamic sa iasa proiectil din romb
-           if (linie_sus == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 420, 440, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+       if (patrat_3_p == 1) {
+           timp_p += deltaTimeSeconds;
+           if (linie_sus == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 460, 440, 0, 1, 1, 0.38, 0 });
 
            }
           
            if (mouse_dr_3 == 0) {
-               
                modelMatrix = glm::mat3(1);
                modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
                modelMatrix *= transform2D::Scale(3, 3);
@@ -1523,54 +1437,7 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_3_p = 0;
-                       
-
-                   }
-
-               }
-
-           }
-
-       }
-      
-
-       if (patrat_4_p == 1 && patrat_4_m == 0) {
-           if (linie_mijloc == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 260, 270, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
-
-           }
-           if (mouse_dr_4 == 0) {
-
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-           }
-           if (mouse_dr_4 == 1) {
-               if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
-                   if (scalare_romb_x >= 0.0) {
-                       scalare_romb_x += deltaTimeSeconds * -0.2;
-                       scalare_romb_y = scalare_romb_x;
-                       modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-                       modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-                       RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-                       patrat_4_p = 0;
+                       mouse_dr_3 = 0;
                        
 
                    }
@@ -1581,20 +1448,50 @@ void TEMA1::Update(float deltaTimeSeconds)
 
        }
 
-       if (patrat_5_p == 1 && patrat_5_m == 0) {
-           if (linie_mijloc == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 340, 270, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+       if (patrat_4_p == 1) {
+           timp_p += deltaTimeSeconds;
+
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 270, 0, 1, 1, 0.38, 0 });
+
+          }
+          if (mouse_dr_4 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_4 == 1) {
+              if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+                      patrat_4_p = 0;
+                      mouse_dr_4 = 0;
+                      
+
+                  }
+
+              }
+
+          }
+
+       }
+       if (patrat_5_p == 1) {
+           timp_p += deltaTimeSeconds;
+           if (linie_mijloc == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 340, 270, 0, 1, 1, 0.38, 0 });
 
            }
            if (mouse_dr_5 == 0) {
@@ -1618,7 +1515,8 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_5_p = 0;
-                       mouse_dreapta = 0;
+                       mouse_dr_5 = 0;
+                      
 
                    }
 
@@ -1628,26 +1526,14 @@ void TEMA1::Update(float deltaTimeSeconds)
 
        }
 
-
-       if (patrat_6_p == 1 && patrat_6_m == 0) {
+       if (patrat_6_p == 1) {
+           timp_p += deltaTimeSeconds;
            // cand pe acea linie am inamic sa iasa proiectil din romb
-           if (linie_mijloc == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 420, 270, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
-
+           if (linie_mijloc == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 460, 270, 0, 1, 1, 0.38, 0 });
            }
            if (mouse_dr_6 == 0) {
-
                modelMatrix = glm::mat3(1);
                modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
                modelMatrix *= transform2D::Scale(3, 3);
@@ -1667,7 +1553,8 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_6_p = 0;
-                       mouse_dreapta = 0;
+                       mouse_dr_6 = 0;
+                       
 
                    }
 
@@ -1677,116 +1564,90 @@ void TEMA1::Update(float deltaTimeSeconds)
 
        }
 
-       if (patrat_7_p == 1 && patrat_7_m == 0) {
-           if (linie_jos == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 260, 80, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+       if (patrat_7_p == 1 ) {
+           timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 80, 0, 1, 1, 0.38, 0 });
 
-           }
-           if (mouse_dr_7 == 0) {
+          }
+          if (mouse_dr_7 == 0) {
 
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-           }
-           if (mouse_dr_7 == 1) {
-               if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
-                   if (scalare_romb_x >= 0.0) {
-                       scalare_romb_x += deltaTimeSeconds * -0.2;
-                       scalare_romb_y = scalare_romb_x;
-                       modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-                       modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-                       RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-                       patrat_7_p = 0;
-                       mouse_dreapta = 0;
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_7 == 1) {
+              if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+                      patrat_7_p = 0;
+                      mouse_dr_7 = 0;
+                      
 
-                   }
+                  }
 
-               }
+              }
 
-           }
+          }
 
        }
 
-       if (patrat_8_p == 1 && patrat_8_m == 0) {
-           if (linie_jos == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 340, 80, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
+       if (patrat_8_p == 1) {
+           timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 80, 0, 1, 1, 0.38, 0 });
 
-           }
+          }
 
-           if (mouse_dr_8 == 0) {
+          if (mouse_dr_8 == 0) {
 
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-               modelMatrix = glm::mat3(1);
-               modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-               modelMatrix *= transform2D::Scale(3, 3);
-               RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-           }
-           if (mouse_dr_8 == 1) {
-               if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
-                   if (scalare_romb_x >= 0.0) {
-                       scalare_romb_x += deltaTimeSeconds * -0.2;
-                       scalare_romb_y = scalare_romb_x;
-                       modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-                       modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-                       RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
-                       RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
-                       patrat_8_p = 0;
-                       mouse_dreapta = 0;
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_8 == 1) {
+              if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
+                      patrat_8_p = 0;
+                      mouse_dr_8 = 0;
+                     
 
-                   }
+                  }
 
-               }
+              }
 
-           }
+          }
 
        }
 
-       if (patrat_9_p == 1 && patrat_9_m == 0) {
-           if (linie_jos == 1) {
-               centru_proiectil_rezultat = AparitieProiectil(1, 0.38, 0, deltaTimeSeconds, 420, 80, 0);
-               // vreau sa dispara proiectilul care a atacat hexagonul
-               if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-                   if (scalare_proiectil >= 0.0) {
-                       scalare_proiectil += deltaTimeSeconds * -5;
-                       modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-                       RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-                   }
-               }
-               else {
-                   RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-               }
-
+       if (patrat_9_p == 1) {
+           timp_p += deltaTimeSeconds;
+           if (linie_jos == 1 && timp_p > interval_p) {
+               timp_p = 0;
+               proiectile.push_back({ 420, 80, 0, 1, 1, 0.38, 0 });
            }
            if (mouse_dr_9 == 0) {
 
@@ -1809,7 +1670,8 @@ void TEMA1::Update(float deltaTimeSeconds)
                        RenderMesh2D(meshes["romb_1"], shaders["VertexColor"], modelMatrix);
                        RenderMesh2D(meshes["dreptunghi_romb_1"], shaders["VertexColor"], modelMatrix);
                        patrat_9_p = 0;
-                       mouse_dreapta = 0;
+                       mouse_dr_9 = 0;
+                       
 
                    }
 
@@ -1819,1352 +1681,1165 @@ void TEMA1::Update(float deltaTimeSeconds)
 
        }
 
-       //if (patrat_1_m == 1 && patrat_1_p != 1) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 260, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_1 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //        //centru_romb_sus = glm::vec2(x_mouse_release, y_mouse_release);
-       //        //if (coliziune_HR == 1) {
-       //        //    cout << "coliziune HR pe 1" << endl;
-       //        //    modelMatrix = glm::mat3(1);
-       //        //    if (scaleX >= 0.0) {
-       //        //        scaleX += deltaTimeSeconds * -5;
-       //        //        //mentine forma uniforma
-       //        //        scaleY = scaleX;
-       //        //        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-       //        //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-
-       //        //    }
-       //        //}
-       //    }
-       //    // disparitie romb la apasare click dreapta
-
-       //    if (mouse_dr_1 == 1) {
-       //        if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_1_m = 0;
-
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-
-       //}
-
-
-       //if (patrat_2_m == 1 && patrat_2_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 340, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_2 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_2 == 1) {
-       //        if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_2_m = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_3_m == 1 && patrat_3_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 420, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_3 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_3 == 1) {
-       //        if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_3_m = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_4_m == 1 && patrat_4_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 260, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_4 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_4 == 1) {
-       //        if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_4_m = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_5_m == 1 && patrat_5_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 340, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_5 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_5 == 1) {
-       //        if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_5_m = 0;
-       //                
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_6_m == 1 && patrat_6_p == 0) {
-       //    // cand pe acea linie am inamic sa iasa proiectil din romb
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 420, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_6 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_6 == 1) {
-       //        if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_6_m = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_7_m == 1 && patrat_7_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 260, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_7 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_7 == 1) {
-       //        if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_7_m = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_8_m == 1 && patrat_8_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 340, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_8 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_8 == 1) {
-       //        if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_8_m = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_9_m == 1 && patrat_9_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0.612, 0, 1, deltaTimeSeconds, 420, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_9 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_9 == 1) {
-       //        if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-       //                patrat_9_m = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-
-       //if (patrat_1_a == 1 && patrat_1_p != 1) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 260, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_1 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //        //centru_romb_sus = glm::vec2(x_mouse_release, y_mouse_release);
-       //        //if (coliziune_HR == 1) {
-       //        //    cout << "coliziune HR pe 1" << endl;
-       //        //    modelMatrix = glm::mat3(1);
-       //        //    if (scaleX >= 0.0) {
-       //        //        scaleX += deltaTimeSeconds * -5;
-       //        //        //mentine forma uniforma
-       //        //        scaleY = scaleX;
-       //        //        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-       //        //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-
-       //        //    }
-       //        //}
-       //    }
-       //    // disparitie romb la apasare click dreapta
-
-       //    if (mouse_dr_1 == 1) {
-       //        if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_1_a = 0;
-
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-
-       //}
-
-
-       //if (patrat_2_a == 1 && patrat_2_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 340, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_2 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_2 == 1) {
-       //        if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_2_a = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_3_a == 1 && patrat_3_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 420, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_3 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_3 == 1) {
-       //        if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_3_a = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_4_a == 1 && patrat_4_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 260, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_4 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_4 == 1) {
-       //        if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_4_a = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_5_a == 1 && patrat_5_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 340, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_5 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_5 == 1) {
-       //        if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_5_a = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_6_a == 1 && patrat_6_p == 0) {
-       //    // cand pe acea linie am inamic sa iasa proiectil din romb
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 420, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_6 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_6 == 1) {
-       //        if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_6_a = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_7_a == 1 && patrat_7_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 260, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_7 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_7 == 1) {
-       //        if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_7_a = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_8_a == 1 && patrat_8_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 340, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_8 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_8 == 1) {
-       //        if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_8_a = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_9_a == 1 && patrat_9_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(0, 0.094, 1, deltaTimeSeconds, 420, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_9 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_9 == 1) {
-       //        if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_9_a = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_1_g == 1 && patrat_1_p != 1) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 260, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_1 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //        //centru_romb_sus = glm::vec2(x_mouse_release, y_mouse_release);
-       //        //if (coliziune_HR == 1) {
-       //        //    cout << "coliziune HR pe 1" << endl;
-       //        //    modelMatrix = glm::mat3(1);
-       //        //    if (scaleX >= 0.0) {
-       //        //        scaleX += deltaTimeSeconds * -5;
-       //        //        //mentine forma uniforma
-       //        //        scaleY = scaleX;
-       //        //        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-       //        //        RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
-       //        //        RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
-
-       //        //    }
-       //        //}
-       //    }
-       //    // disparitie romb la apasare click dreapta
-
-       //    if (mouse_dr_1 == 1) {
-       //        if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
-       //                patrat_1_g = 0;
-
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-
-       //}
-
-
-       //if (patrat_2_g == 1 && patrat_2_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 340, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_2 == 0) {
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_2 == 1) {
-       //        if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_2_g = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_3_g == 1 && patrat_3_p == 0) {
-       //    if (linie_sus == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 420, 440);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_sus == 1 && coliziune_mijl == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_3 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_3 == 1) {
-       //        if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_3_g = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_4_g == 1 && patrat_4_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 260, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_4 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_4 == 1) {
-       //        if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_4_g = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_5_g == 1 && patrat_5_p == 0) {
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 340, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_5 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_5 == 1) {
-       //        if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_5_g = 0;
-
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-
-       //if (patrat_6_g == 1 && patrat_6_p == 0) {
-       //    // cand pe acea linie am inamic sa iasa proiectil din romb
-       //    if (linie_mijloc == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 420, 270);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_mijl == 1 && coliziune_sus == 0 && coliziune_jos == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_6 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_6 == 1) {
-       //        if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_6_g = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_7_g == 1 && patrat_7_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 260, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_7 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_7 == 1) {
-       //        if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_7_g = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_8_g == 1 && patrat_8_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 340, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_8 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_8 == 1) {
-       //        if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_8_g = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
-
-       //if (patrat_9_g == 1 && patrat_9_p == 0) {
-       //    if (linie_jos == 1) {
-       //        centru_proiectil_rezultat = AparitieProiectil(1, 0.98, 0, deltaTimeSeconds, 420, 80);
-       //        // vreau sa dispara proiectilul care a atacat hexagonul
-       //        if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
-       //            if (scalare_proiectil >= 0.0) {
-       //                scalare_proiectil += deltaTimeSeconds * -5;
-       //                modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
-       //                RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //            }
-       //        }
-       //        else {
-       //            RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
-       //        }
-
-       //    }
-       //    if (mouse_dr_9 == 0) {
-
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //        modelMatrix = glm::mat3(1);
-       //        modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //        modelMatrix *= transform2D::Scale(3, 3);
-       //        RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //    }
-       //    if (mouse_dr_9 == 1) {
-       //        if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
-       //            if (scalare_romb_x >= 0.0) {
-       //                scalare_romb_x += deltaTimeSeconds * -0.2;
-       //                scalare_romb_y = scalare_romb_x;
-       //                modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
-       //                modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
-       //                RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
-       //                RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
-       //                patrat_9_g = 0;
-       //                mouse_dreapta = 0;
-
-       //            }
-
-       //        }
-
-       //    }
-
-       //}
+       if (patrat_1_m == 1 ) {
+           timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 440, 0, 1, 0.612, 0, 1});
+
+          }
+          if (mouse_dr_1 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+              // PARTE DE APELARE PENTRU COLIZIUNE HEXAGON-ROMB
+              centru_romb_sus = glm::vec2(x_mouse_release, y_mouse_release);
+              if (coliziune_HR == 1) {
+                  modelMatrix = glm::mat3(1);
+                  if (scaleX >= 0.0) {
+                      scaleX += deltaTimeSeconds * -5;
+                      //mentine forma uniforma
+                      scaleY = scaleX;
+                      modelMatrix *= transform2D::Scale(scaleX, scaleY);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+
+                  }
+              }
+          }
+            // disparitie romb la apasare click dreapta
+            if (mouse_dr_1 == 1) {
+              if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_1_m = 0;
+                      mouse_dr_1 = 0;
+
+                  }
+
+              }
+
+            }
+
+
+       }
+
+
+      if (patrat_2_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 440, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_2 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_2 == 1) {
+              if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_2_m = 0;
+                      mouse_dr_2 = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_3_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 440, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_3 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_3 == 1) {
+              if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_3_m = 0;
+                      mouse_dr_3 = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_4_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 270, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_4 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_4 == 1) {
+              if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_4_m = 0;
+                      mouse_dr_4 = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_5_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 270, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_5 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_5 == 1) {
+              if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_5_m = 0;
+                      mouse_dr_5 = 0;
+                      
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_6_m == 1) {
+          timp_p += deltaTimeSeconds;
+          // cand pe acea linie am inamic sa iasa proiectil din romb
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 420, 270, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_6 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_6 == 1) {
+              if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_6_m = 0;
+                      mouse_dr_6 = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_7_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 80, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_7 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_7 == 1) {
+              if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_7_m = 0;
+                      mouse_dr_7 = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_8_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 80, 0, 1, 0.612, 0, 1 });
+              // vreau sa dispara proiectilul care a atacat hexagonul
+              if (coliziune_jos == 1 && coliziune_sus == 0 && coliziune_mijl == 0) {
+                  if (scalare_proiectil >= 0.0) {
+                      scalare_proiectil += deltaTimeSeconds * -5;
+                      modelMatrix *= transform2D::Scale(scalare_proiectil, scalare_proiectil);
+                      RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
+                  }
+              }
+              else {
+                  RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
+              }
+
+          }
+          if (mouse_dr_8 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_8 == 1) {
+              if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_8_m = 0;
+                      mouse_dr_8 = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_9_m == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 420, 80, 0, 1, 0.612, 0, 1 });
+
+          }
+          if (mouse_dr_9 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_9 == 1) {
+              if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_2"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_2"], shaders["VertexColor"], modelMatrix);
+                      patrat_9_m = 0;
+                      mouse_dr_9 = 0;
+                     
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_1_a == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 440, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_1 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+
+          }
+      
+          // disparitie romb la apasare click dreapta
+
+          if (mouse_dr_1 == 1) {
+              if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_1_a = 0;
+
+
+
+                  }
+
+              }
+
+          }
+
+
+      }
+
+
+      if (patrat_2_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 440, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_2 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_2 == 1) {
+              if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_2_a = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_3_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 &&  timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 440, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_3 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_3 == 1) {
+              if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_3_a = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_4_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 270, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_4 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_4 == 1) {
+              if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_4_a = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_5_a == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 270, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_5 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_5 == 1) {
+              if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_5_a = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_6_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          // cand pe acea linie am inamic sa iasa proiectil din romb
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 270, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_6 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_6 == 1) {
+              if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_6_a = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_7_a == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 80, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_7 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_7 == 1) {
+              if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_7_a = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_8_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 80, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_8 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_8 == 1) {
+              if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_8_a = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_9_a == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 80, 0, 1, 0, 0.094, 1 });
+
+          }
+          if (mouse_dr_9 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_9 == 1) {
+              if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_9_a = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_1_g == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 440, 0, 1, 1, 0.98, 0});
+
+          }
+          if (mouse_dr_1 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+              
+          }
+      }
+          // disparitie romb la apasare click dreapta
+
+          if (mouse_dr_1 == 1) {
+              if (release_p1_x - 50 <= x_apasat_mouse <= release_p1_x + 50 && release_p1_y - 50 <= y_apasat_mouse <= release_p1_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p1_x, release_p1_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_3"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_3"], shaders["VertexColor"], modelMatrix);
+                      patrat_1_g = 0;
+
+
+
+                  }
+
+              }
+
+          }
+
+
+      
+
+
+      if (patrat_2_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 440, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_2 == 0) {
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_2 == 1) {
+              if (release_p2_x - 50 <= x_apasat_mouse <= release_p2_x + 50 && release_p2_y - 50 <= y_apasat_mouse <= release_p2_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p2_x, release_p2_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_2_g = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_3_g == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_sus == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 420, 440, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_3 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_3 == 1) {
+              if (release_p3_x - 50 <= x_apasat_mouse <= release_p3_x + 50 && release_p3_y - 50 <= y_apasat_mouse <= release_p3_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p3_x, release_p3_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_3_g = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_4_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 270, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_4 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_4 == 1) {
+              if (release_p4_x - 50 <= x_apasat_mouse <= release_p4_x + 50 && release_p4_y - 50 <= y_apasat_mouse <= release_p4_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p4_x, release_p4_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_4_g = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_5_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 270, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_5 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_5 == 1) {
+              if (release_p5_x - 50 <= x_apasat_mouse <= release_p5_x + 50 && release_p5_y - 50 <= y_apasat_mouse <= release_p5_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p5_x, release_p5_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_5_g = 0;
+
+
+                  }
+
+              }
+
+          }
+
+      }
+
+
+      if (patrat_6_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          // cand pe acea linie am inamic sa iasa proiectil din romb
+          if (linie_mijloc == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 270, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_6 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_6 == 1) {
+              if (release_p6_x - 50 <= x_apasat_mouse <= release_p6_x + 50 && release_p6_y - 50 <= y_apasat_mouse <= release_p6_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p6_x, release_p6_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_6_g = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_7_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 260, 80, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_7 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_7 == 1) {
+              if (release_p7_x - 50 <= x_apasat_mouse <= release_p7_x + 50 && release_p7_y - 50 <= y_apasat_mouse <= release_p7_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p7_x, release_p7_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_7_g = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_8_g == 1) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 340, 80, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_8 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_8 == 1) {
+              if (release_p8_x - 50 <= x_apasat_mouse <= release_p8_x + 50 && release_p8_y - 50 <= y_apasat_mouse <= release_p8_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p8_x, release_p8_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_8_g = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+
+      if (patrat_9_g == 1 ) {
+          timp_p += deltaTimeSeconds;
+          if (linie_jos == 1 && timp_p > interval_p) {
+              timp_p = 0;
+              proiectile.push_back({ 460, 80, 0, 1, 1, 0.98, 0 });
+
+          }
+          if (mouse_dr_9 == 0) {
+
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+              modelMatrix = glm::mat3(1);
+              modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+              modelMatrix *= transform2D::Scale(3, 3);
+              RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+          }
+          if (mouse_dr_9 == 1) {
+              if (release_p9_x - 50 <= x_apasat_mouse <= release_p9_x + 50 && release_p9_y - 50 <= y_apasat_mouse <= release_p9_y + 50) {
+                  if (scalare_romb_x >= 0.0) {
+                      scalare_romb_x += deltaTimeSeconds * -0.2;
+                      scalare_romb_y = scalare_romb_x;
+                      modelMatrix *= transform2D::Translate(release_p9_x, release_p9_y - 8);
+                      modelMatrix *= transform2D::Scale(scalare_romb_x, scalare_romb_y);
+                      RenderMesh2D(meshes["romb_4"], shaders["VertexColor"], modelMatrix);
+                      RenderMesh2D(meshes["dreptunghi_romb_4"], shaders["VertexColor"], modelMatrix);
+                      patrat_9_g = 0;
+                      mouse_dreapta = 0;
+
+                  }
+
+              }
+
+          }
+
+      }
+      
+
+       // parcurgere proiectile
+       for (int k = 0; k < proiectile.size(); k++) {
+               // aparitie proiectile
+               proiectile[k].centru_p = AparitieProiectil(proiectile[k].R, proiectile[k].G, proiectile[k].B, deltaTimeSeconds, &proiectile[k].x, proiectile[k].y, &proiectile[k].radiani);
+      
+               // parcurgere vectori de inamici pentru fiecare linie si incercare
+               // detectie coliziune 
+               int z1 = -1;
+               int z2 = -1;
+               int z3 = -1;
+               if (proiectile[k].y == 440) {
+                   for (p = 0; p < v_h_linie_sus.size(); p++) {
+                      bool c = ColiziuneSH(v_h_linie_sus[p].centru_h, proiectile[k].centru_p, proiectile[k], v_h_linie_sus[p]);
+                       if (c == true) {
+                            z1 = p;
+                          
+                       }
+                       
+                   }
+               }
+               if (proiectile[k].y == 270) {
+                   for (r = 0; r < v_h_linie_mijl.size();  r++) {
+                       bool c = ColiziuneSH(v_h_linie_mijl[r].centru_h, proiectile[k].centru_p, proiectile[k], v_h_linie_mijl[r]);
+                       if (c == true) {
+                           z2 = r;
+                           
+                       }
+
+                   }
+               }
+               if (proiectile[k].y == 80) {
+                   for (s = 0; s < v_h_linie_jos.size(); s++) {
+                       bool c = ColiziuneSH(v_h_linie_jos[s].centru_h, proiectile[k].centru_p, proiectile[k], v_h_linie_jos[s]);
+                       if (c == true) {
+                           z3 = s;
+                           
+                       }
+
+                   }
+               }
+                  
+               // vreau sa dispara proiectilul care a atacat hexagonul
+               if (z1 != -1) {
+                   proiectile.erase(proiectile.begin() + k);  // Elimină proiectilul de pe linia de sus
+                   k--;
+                   v_h_linie_sus.erase(v_h_linie_sus.begin() + z1);
+                   z1 = -1;
+                       
+                       
+                    
+               }
+
+               if (z2 != -1) {
+                   proiectile.erase(proiectile.begin() + k);  // Elimină proiectilul de pe linia de sus
+                   k--;
+                   v_h_linie_mijl.erase(v_h_linie_mijl.begin() + z2);
+                   z2 = -1;
+
+
+
+               }
+
+               if (z3 != -1) {
+                   proiectile.erase(proiectile.begin() + k);  // Elimină proiectilul de pe linia de sus
+                   k--;
+                   v_h_linie_jos.erase(v_h_linie_jos.begin() + z3);
+                   z3 = -1;
+
+
+
+               }
+                  
+               RenderMesh2D(meshes["stea"], shaders["VertexColor"], modelMatrix);
+               
+
+           
+       }
+
+     
 }
-
-
-
-
-
-
 
 
 
@@ -3316,16 +2991,15 @@ void TEMA1::CreateStar(float R, float G, float B) {
 }
 
 // functie aparitie inamici
-glm::vec2 TEMA1::AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float x, float y, float radiani) {
+glm::vec2 TEMA1::AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float* x, float y, float* radiani) {
     CreateStar(R, G, B);
-    translate_stea_X += deltaTimeSeconds * 150.0f;
-    centru_proiectil = glm::vec2(x + translate_stea_X, y);
+    *x += deltaTimeSeconds * 150.0f;
+    centru_proiectil = glm::vec2(*x, y);
     modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(x, y);
-    modelMatrix *= transform2D::Translate(translate_stea_X, 0.0f);
+    modelMatrix *= transform2D::Translate(*x, y);
     modelMatrix *= transform2D::Scale(20, 20);
-    radiani -= deltaTimeSeconds * 3;
-    modelMatrix *= transform2D::Rotate(radiani);
+    *radiani -= deltaTimeSeconds * 3;
+    modelMatrix *= transform2D::Rotate(*radiani);
     
    
 
@@ -3335,44 +3009,35 @@ glm::vec2 TEMA1::AparitieProiectil(float R, float G, float B, float deltaTimeSec
 // fac mai multe functii care sa faca sa dispara chestii dupa modelul asteia
 void TEMA1::DisparitieMesh(float deltaTimeSeconds) {
     modelMatrix = glm::mat3(1);
-    // sa schimbi hardocadarea in parametri aici
-    //modelMatrix *= transform2D::Translate(700, 400);
-    //modelMatrix *= transform2D::Scale(3, 3);
     if (scaleX >= 0.0) {
        scaleX += deltaTimeSeconds * -0.2;
-       //mentine forma uniforma
        scaleY = scaleX;
        modelMatrix *= transform2D::Scale(scaleX, scaleY);
-       //RenderMesh2D(meshes["patrat_viata"], shaders["VertexColor"], modelMatrix);
        
     }
 }
 
-void TEMA1::ColiziuneSH(glm::vec2 centru_hexagon, glm::vec2 centru_proiectil_rezultat) {
+bool TEMA1::ColiziuneSH(glm::vec2 centru_hexagon, glm::vec2 centru_proiectil_rezultat, Proiectil proiectil, Hexagon inamic) {
     distanta_centre = glm::distance(centru_hexagon, centru_proiectil_rezultat);
-    if (distanta_centre != 0 && distanta_centre < 8) {
-        // marchez ca am detectat coliziune
-        coliziune = 1;
+    if ( distanta_centre < 8) {
+        inamic.disparitie = 1;
+        return true;
        
     }
+    return false;
+    
     
     
 }
 
 
-//void TEMA1::ColiziuneRH(glm::vec2 centru_hexagon, glm::vec2 centru_romb_sus) {
-//    distanta_centre_HR = glm::distance(centru_hexagon, centru_romb_sus);
-//    cout << distanta_centre_HR << endl;
-//    //cout << centru_hexagon[0] << endl;
-//    if (distanta_centre_HR != 0 && distanta_centre < 21) {
-//        // marchez ca am detectat coliziune
-//        coliziune_HR = 1;
-//        
-//
-//    }
-//
-//
-//}
+void TEMA1::ColiziuneRH(glm::vec2 centru_hexagon, glm::vec2 centru_romb_sus) {
+    distanta_centre_HR = glm::distance(centru_hexagon, centru_romb_sus);
+    if (distanta_centre_HR != 0 && distanta_centre < 21) {
+        coliziune_HR = 1;
+        
+    }
+}
 
 
 void TEMA1::FrameEnd()

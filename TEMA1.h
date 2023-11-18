@@ -30,6 +30,19 @@ namespace m1
             float height;
         };
 
+        struct Hexagon {
+            float x, y, radiani, scale;
+            float R, G, B;
+            int disparitie;
+            glm::vec2 centru_h;
+        };
+
+        struct Proiectil {
+            float x, y, radiani, scalare, R, G, B;
+            int disparitie;
+            glm::vec2 centru_p;
+        };
+
      public:
         TEMA1();
         ~TEMA1();
@@ -61,9 +74,9 @@ namespace m1
         glm::mat3 VisualizationTransf2DUnif(const LogicSpace& logicSpace, const ViewportSpace& viewSpace);
         void SetViewportArea(const ViewportSpace& viewSpace, glm::vec3 colorColor = glm::vec3(0), bool clear = true);
         void CreateStar(float R, float G, float B);
-        glm::vec2 AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float x, float y, float radiani);
+        glm::vec2 AparitieProiectil(float R, float G, float B, float deltaTimeSeconds, float* x, float y, float* radiani);
         void DisparitieMesh(float deltaTimeSeconds);
-        void ColiziuneSH(glm::vec2 centru_hexagon, glm::vec2 centru_proiectil_rezultat);
+        bool ColiziuneSH(glm::vec2 centru_hexagon, glm::vec2 centru_proiectil_rezultat, Proiectil proiectil, Hexagon inamic);
         void CreareHexagon(float R1, float G1, float B1, float R2, float G2, float B2);
         float RandomFloat(float min, float max);
         bool isPointNear(float x, float y, float targetX, float targetY, float distanceThreshold);
@@ -138,6 +151,22 @@ namespace m1
         float distanta_centre_HR;
         int coliziune_HR;
         float scalare_romb;
+        float x_temp;
+        float R, G, B;
+        float interval_p;
+        float timp_p;
+        int aux_p;
+        int p, r, s;
+        int stergere;
+        
+
+       
+        std::vector <Hexagon> v_h_linie_sus;
+        std::vector <Hexagon> v_h_linie_mijl;
+        std::vector <Hexagon> v_h_linie_jos;
+        std::vector <Proiectil> proiectile;
 
     };
+
+
 }   // namespace m1
